@@ -29,8 +29,17 @@ on desktop and 8 on mobile. Each `.b` block places itself with inline `--d` (des
 ## Images
 
 - Site images (logos, heroes, maps, team photos) are committed under `images/`.
-- Photo galleries (`photos.html`, bottom of `volunteer.html`) are not committed. They are listed in
-  `docs/gallery-manifest.json`. See `docs/MIGRATION.md` for where they are served from.
+- Photo galleries (`photos.html`, bottom of `volunteer.html`) are not committed. They live in the
+  Cloudflare R2 bucket `countykidsofsteel-photos`, served at `https://photos.countykidsofsteel.ca/`.
+  `docs/gallery-manifest.json` lists the migrated photos (`key` is the file name in the bucket).
+- Bucket layout: `gallery/750/<key>.webp` and `gallery/1500/<key>.webp` are used by the pages via
+  `srcset`; `gallery/full/<key>.jpg` is a 2500px archive copy. Bucket files are cached for a year,
+  so never replace a file in place: give a changed photo a new key.
+- **Adding photos:** run `python3 tools/gallery.py <photo folder> <out folder> --layout grid`
+  (needs Pillow), paste the printed `<figure>` tags into the gallery, then upload with
+  `rclone copy <out folder> r2:countykidsofsteel-photos --s3-no-check-bucket --header-upload
+  "Cache-Control: public, max-age=31536000, immutable"`. The `r2` rclone remote uses an API token
+  limited to that bucket, so `rclone lsd r2:` failing with AccessDenied is expected.
 
 ## Fonts
 
