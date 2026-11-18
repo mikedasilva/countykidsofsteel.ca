@@ -1,12 +1,12 @@
 # Squarespace to GitHub Pages migration
 
-## Status (updated 2026-11-14)
+## Status (updated 2026-11-17)
 
 | Phase | State |
 |---|---|
-| 1. Rebuild the site on GitHub Pages | **Done.** Live preview: https://mikedasilva.github.io/countykidsofsteel.ca/ |
+| 1. Rebuild the site on GitHub Pages | **Done.** Live at https://countykidsofsteel.ca/ |
 | 2. Galleries on Cloudflare R2 | **Done.** Served from https://photos.countykidsofsteel.ca/ |
-| 3. Point countykidsofsteel.ca at GitHub Pages | **Next.** Not started; steps below |
+| 3. Point countykidsofsteel.ca at GitHub Pages | **Done** (2026-11-17), apart from the email test and Search Console; see below |
 | 4. Fix content, SEO, structure, performance | Backlog below |
 
 The preview was checked after publishing: every page, internal link and gallery photo loads (except
@@ -15,8 +15,8 @@ the known broken "LET'S DO THIS!" link), and both background videos play.
 **Where things live**
 
 - Code: https://github.com/mikedasilva/countykidsofsteel.ca (public). Pages builds from `main` root.
-- DNS: the Cloudflare account (zone `countykidsofsteel.ca`). `countykidsofsteel.ca` and `www`
-  still point at Squarespace, so the public site is still the Squarespace one.
+- DNS: the Cloudflare account (zone `countykidsofsteel.ca`). The apex and `www` point at GitHub
+  Pages (DNS only, grey cloud). The github.io preview URL now redirects to the domain.
 - Domain registration: Squarespace Domains (Tucows), renews 2027-10-25.
 - Photos: R2 bucket `countykidsofsteel-photos`. Uploads use the `r2` rclone remote set up on the
   Mac used for the migration, with an API token limited to that bucket.
@@ -62,6 +62,25 @@ the known broken "LET'S DO THIS!" link), and both background videos play.
 
 ## Phase 3: DNS cutover
 
+**Done (2026-11-17).** Apex A/AAAA and `www` CNAME point at GitHub Pages. The HTTPS certificate
+(Let's Encrypt, covers apex and `www`, auto-renews) is issued and **Enforce HTTPS** is on. `www`
+and `http://` redirect to `https://countykidsofsteel.ca/`; old URLs (`/photos`, `/sponsors`,
+`/s/...pdf`) work. Email records were not touched.
+
+Notes from the cutover:
+
+- Step 1 (verify the domain in GitHub) was skipped; it can still be done any time.
+- GitHub ran its domain check but never requested the certificate. Removing and re-adding the
+  custom domain (Settings → Pages, or the API) fixed it within minutes. That adds "Delete CNAME" /
+  "Create CNAME" commits to `main`. The new certificate then took a few minutes to reach all of
+  GitHub's servers.
+- The zone also holds three Amazon SES DKIM CNAMEs (`..._domainkey` → `dkim.amazonses.com`),
+  probably from Squarespace Email Campaigns, and a `_domainconnect` CNAME for Squarespace Domains.
+  Both were left in place; review them after Squarespace is cancelled.
+- Still to do: send a test email to the domain (step 5) and resubmit `sitemap.xml` (step 6).
+
+Original steps, kept for reference:
+
 **Do not disturb email**: change only the apex and `www` records. Leave the MX, DKIM
 (`google._domainkey`), DMARC and `google-site-verification` records as they are.
 
@@ -93,7 +112,7 @@ Before cancelling Squarespace:
       button until a newsletter service is chosen later.
 - [x] Canonical host decided: the apex, `countykidsofsteel.ca`, with `www` redirecting to it.
       Pages already declare the apex.
-- [ ] Phase 3 cutover done and checked (steps above)
+- [x] Phase 3 cutover done and checked (steps above)
 - [ ] Download anything else wanted from Squarespace (form submissions, analytics, blog drafts)
 - [ ] Then cancel the Squarespace **website** plan only, keeping the domain
 
