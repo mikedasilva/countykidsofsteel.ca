@@ -1,6 +1,6 @@
 # Squarespace to GitHub Pages migration
 
-## Status (updated 2026-11-17)
+## Status (updated 2026-11-23)
 
 | Phase | State |
 |---|---|
@@ -17,7 +17,8 @@ the known broken "LET'S DO THIS!" link), and both background videos play.
 - Code: https://github.com/mikedasilva/countykidsofsteel.ca (public). Pages builds from `main` root.
 - DNS: the Cloudflare account (zone `countykidsofsteel.ca`). The apex and `www` point at GitHub
   Pages (DNS only, grey cloud). The github.io preview URL now redirects to the domain.
-- Domain registration: Squarespace Domains (Tucows), renews 2027-10-25.
+- Domain registration: Cloudflare Registrar (transferred from Squarespace Domains in Nov 2026),
+  expires 2028-10-25. Nameservers are now `austin`/`jamie.ns.cloudflare.com`.
 - Photos: R2 bucket `countykidsofsteel-photos`. Uploads use the `r2` rclone remote set up on the
   Mac used for the migration, with an API token limited to that bucket.
 - Email: Google Workspace (MX, DKIM and DMARC records in Cloudflare DNS).
@@ -76,8 +77,10 @@ Notes from the cutover:
   GitHub's servers.
 - The zone also holds three Amazon SES DKIM CNAMEs (`..._domainkey` → `dkim.amazonses.com`),
   probably from Squarespace Email Campaigns, and a `_domainconnect` CNAME for Squarespace Domains.
-  Both were left in place; review them after Squarespace is cancelled.
-- Still to do: send a test email to the domain (step 5) and resubmit `sitemap.xml` (step 6).
+  Both were left in place. Now that the domain has left Squarespace, `_domainconnect` can be
+  deleted; delete the SES DKIM records after the Squarespace plan is cancelled.
+- Email tested and working after the cutover (step 5).
+- Still to do: resubmit `sitemap.xml` in Google Search Console (step 6).
 
 Original steps, kept for reference:
 
@@ -106,15 +109,16 @@ Steps, in order (the site is briefly unreachable between steps 2 and 3, so do th
 Before cancelling Squarespace:
 
 - [x] Galleries moved to R2 (Phase 2)
-- [ ] Keep the domain registration (billed by Squarespace, separate from the website plan) renewing,
+- [x] Keep the domain registration (billed by Squarespace, separate from the website plan) renewing,
       or transfer it to another `.ca` registrar
-- [ ] Export existing newsletter subscribers from Squarespace. Decided: signups stay as the email
+- [x] Export existing newsletter subscribers from Squarespace. Decided: signups stay as the email
       button until a newsletter service is chosen later.
 - [x] Canonical host decided: the apex, `countykidsofsteel.ca`, with `www` redirecting to it.
       Pages already declare the apex.
 - [x] Phase 3 cutover done and checked (steps above)
-- [ ] Download anything else wanted from Squarespace (form submissions, analytics, blog drafts)
-- [ ] Then cancel the Squarespace **website** plan only, keeping the domain
+- [x] Download anything else wanted from Squarespace (form submissions, analytics, blog drafts).
+      Exported 2026-11-23; the domain is now registered with Cloudflare, not Squarespace.
+- [ ] Then cancel the Squarespace **website** plan. The domain has already moved to Cloudflare.
 
 ## Phase 4: optimization backlog
 
